@@ -19,7 +19,7 @@ import { createMaterialTopTabNavigator, MaterialTopTabBarProps } from '@react-na
 import { NavigationContainer } from '@react-navigation/native';
 import { TODOItemListScreen, UserListScreen, FormScreen, TabBar } from "./src/components";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
-const { Value, event } = Animated;
+const { Value, event, diffClamp } = Animated;
 import ReAnimated from 'react-native-reanimated';
 
 
@@ -41,34 +41,6 @@ const App = () => {
     'Icon',
     'Avatar',
   ];
-  const Header_Maximum_Height = 150;
-  //Max Height of the Header
-  const Header_Minimum_Height = 0;
-  //Min Height of the Header
-  let count = 0;
-  
-  const [scrollOffsetY, setScrollOffsetY] = useState(-45);
-  const [scrollOffsetYTest, setScrollOffsetYTest] = useState(-35);
-
-  const translateY = new Animated.Value(0);
-
-  const translateYForTabNavigator = new Animated.Value(100);
-  const translateYForPageHeader = new Animated.Value(0);
-  
-  const scrolledYPos = useRef(0);
-  const MAX_NAVIGATOR_OFFSET = 140;
-  const onGestureEvent = ({nativeEvent}) => {
-    const { translationY } = nativeEvent;
-     if(translationY < 10) {
-      translateYForTabNavigator.setValue(translationY)
-       translateYForPageHeader.setValue(translationY)
-     } 
-    else {
-       translateYForTabNavigator.setValue(0);
-       translateYForPageHeader.setValue(0);
-     }
-    // console.log(nativeEvent);
-  }
   
 const renderTabBar = (props) =>  {
   return (
@@ -79,19 +51,17 @@ const renderTabBar = (props) =>  {
 const windowHeight = Dimensions.get("window").height;
 
 const Tab = createMaterialTopTabNavigator();
-const TabNavigator = ({ onScrollEvent, pan }) => { 
+const TabNavigator = ({ translateY }) => { 
    return (
      <Animated.View 
-      style={[{ height: 1000}, { transform: [{ translateY: pan.y }]}]}
+      style={[{ height: windowHeight}, { transform: [{ translateY }]}]}
       {...panResponder.panHandlers}
       >
       <Tab.Navigator 
          tabBar={renderTabBar}
       >
           <Tab.Screen
-          name="TODOScreen">
-            {() => <TODOItemListScreen onScrollEvent={onScrollEvent} />}
-          </Tab.Screen>
+          name="TODOScreen" component={TODOItemListScreen} />
           <Tab.Screen
           name="UserScreen" component={UserListScreen} />
           <Tab.Screen
@@ -103,37 +73,35 @@ const TabNavigator = ({ onScrollEvent, pan }) => {
 
   const [tabIndex, setTabIndex] = useState(0);
 
-  const onScrollEvent = () => {
-
-  }
-
+  const headerHeight = 150;
   const pan = useRef(new Animated.ValueXY()).current;
+  const panYClamped = diffClamp(pan.y, -headerHeight, 0);
+  const translateY = panYClamped;
 
-  const calcPanY = (panY) => {
-    const TOP_THRESH = -150;
-    if(panY < TOP_THRESH) {
-      return TOP_THRESH;
-    }
-    return panY;
+
+  const calcTranslateY = (yValue) => {
+      return yValue;
   }
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: () => {
+      onMoveShouldSetPanResponder: (e, gesture) => {
         return true;
       },
       onPanResponderGrant: () => {
         pan.setOffset({
           x: pan.x._value,
-          y: calcPanY(pan.y._value)
+          y: pan.y._value
         });
       },
-      onPanResponderMove: Animated.event(
+      onPanResponderMove: (e, gesture) => {        
+        return Animated.event(
         [
           null,
-          { dx: pan.x, dy: calcPanY(pan.y) }
-        ]
-      ),
+          { dx: pan.x, dy: pan.y }
+        ], { useNativeDriver: false }
+      )(e, {...gesture, dx: gesture.dx, dy: calcTranslateY(gesture.dy)});
+      },
       onPanResponderRelease: () => {
         pan.flattenOffset();
       }
@@ -147,12 +115,12 @@ const TabNavigator = ({ onScrollEvent, pan }) => {
       <NavigationContainer>
         <SafeAreaView>
           <Animated.View 
-            style={[{ height: 150, backgroundColor: "#CCCCCC"}, {transform: [{translateY: pan.y}]}]}
+            style={[{ height: 150, backgroundColor: "#CCCCCC"}, {transform: [{ translateY }]}]}
             {...panResponder.panHandlers}
           >
             <Text>Sticky Tabs With Header & FlatLists</Text>
           </Animated.View>
-          <TabNavigator onScrollEvent={ onScrollEvent } pan={pan} />
+          <TabNavigator translateY={translateY} />
         </SafeAreaView>
       </NavigationContainer>
     </>

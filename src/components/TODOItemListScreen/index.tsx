@@ -18,10 +18,13 @@ interface AnimatedItemProps {
 }
 
 const AnimatedItem = ({ index, item, y }: AnimatedItemProps) => { 
-  const translateY = y;
+  const translateY = y.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0,100]
+  });
   return (
     <Animated.View
-      style={[{height: 100}, {transform: [{ translateY: translateY } ] } ]}
+      style={[{height: 100} ]}
       key={index}
     >
       <Item title={item.title} />
@@ -44,8 +47,10 @@ const y = new Animated.Value(0);
             <AnimatedItem index={index} item={item} y={y} />
           )}
           keyExtractor={item => item.id}
-          {...{onScroll}} 
+         
+ 
         />
+
   );
 }
 
