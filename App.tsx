@@ -75,7 +75,15 @@ const TabNavigator = ({ translateY }) => {
 
   const headerHeight = 150;
   const pan = useRef(new Animated.ValueXY()).current;
+  let isClamped = useRef(false).current;
   const panYClamped = diffClamp(pan.y, -headerHeight, 0);
+  panYClamped.addListener(({ value }) => {    
+    if(value == -headerHeight) {
+      isClamped = true;
+    } else {
+      isClamped = false;
+    }
+  });
   const translateY = panYClamped;
 
 
@@ -86,7 +94,7 @@ const TabNavigator = ({ translateY }) => {
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (e, gesture) => {
-        return true;
+        return !isClamped;
       },
       onPanResponderGrant: () => {
         pan.setOffset({
@@ -94,7 +102,11 @@ const TabNavigator = ({ translateY }) => {
           y: pan.y._value
         });
       },
-      onPanResponderMove: (e, gesture) => {        
+      onPanResponderMove: (e, gesture) => {     
+        if(isClamped) {
+          return false;
+        }
+        
         return Animated.event(
         [
           null,
