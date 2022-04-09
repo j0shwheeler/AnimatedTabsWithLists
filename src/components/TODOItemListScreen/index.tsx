@@ -46,6 +46,7 @@ const y = new Animated.Value(0);
             <AnimatedItem index={index} item={item} y={y} />
           )}
           keyExtractor={item => item.id}
+          onScroll={onScrollEvent}
         />
 
   );

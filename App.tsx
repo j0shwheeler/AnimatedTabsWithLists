@@ -20,27 +20,60 @@ import { NavigationContainer } from '@react-navigation/native';
 import { TODOItemListScreen, UserListScreen, FormScreen, TabBar } from "./src/components";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
 const { Value, event, diffClamp } = Animated;
-import ReAnimated from 'react-native-reanimated';
-
 
 const App = () => {
-  const dummyData = [
-    'Text',
-    'Input',
-    'Button',
-    'Card',
-    'CheckBox',
-    'Divider',
-    'Header',
-    'List Item',
-    'Pricing',
-    'Rating',
-    'Search Bar',
-    'Slider',
-    'Tile',
-    'Icon',
-    'Avatar',
-  ];
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const headerHeight = 150;
+  const pan = useRef(new Animated.ValueXY()).current;
+  let isClamped = useRef(false).current;
+  const panYClamped = diffClamp(pan.y, -headerHeight, 0);
+  panYClamped.addListener(({ value }) => {    
+    if(value == -headerHeight) {
+      isClamped = true;
+    } else {
+      isClamped = false;
+    }
+  });
+  const translateY = panYClamped;
+  const calcTranslateY = (yValue) => {
+      return yValue;
+  }
+  
+  let contentOffsetY = useRef(0).current;
+  const onScrollEvent = ({ nativeEvent }) => {
+    contentOffsetY = nativeEvent.contentOffset.y;
+    console.log(contentOffsetY);
+  }
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (e, gesture) => {
+        if(isClamped && contentOffsetY <= 0 && gesture.vy >= 0) {
+          isClamped = false;
+        }
+        return !isClamped;
+      },
+      onPanResponderGrant: () => {
+        pan.setOffset({
+          x: pan.x._value,
+          y: pan.y._value
+        });
+      },
+      onPanResponderMove: (e, gesture) => {     
+        return Animated.event(
+        [
+          null,
+          { dx: pan.x, dy: pan.y }
+        ], { useNativeDriver: false }
+      )(e, {...gesture, dx: gesture.dx, dy: calcTranslateY(gesture.dy)});
+      },
+      onPanResponderRelease: () => {
+        pan.flattenOffset();
+      }
+    })
+  ).current;
+
   
 const renderTabBar = (props) =>  {
   return (
@@ -61,7 +94,9 @@ const TabNavigator = ({ translateY }) => {
          tabBar={renderTabBar}
       >
           <Tab.Screen
-          name="TODOScreen" component={TODOItemListScreen} />
+          name="TODOScreen">
+            {() => <TODOItemListScreen onScrollEvent={onScrollEvent} />}
+          </Tab.Screen>
           <Tab.Screen
           name="UserScreen" component={UserListScreen} />
           <Tab.Screen
@@ -70,57 +105,6 @@ const TabNavigator = ({ translateY }) => {
       </Animated.View>
    )
  }
-
-  const [tabIndex, setTabIndex] = useState(0);
-
-  const headerHeight = 150;
-  const pan = useRef(new Animated.ValueXY()).current;
-  let isClamped = useRef(false).current;
-  const panYClamped = diffClamp(pan.y, -headerHeight, 0);
-  panYClamped.addListener(({ value }) => {    
-    if(value == -headerHeight) {
-      isClamped = true;
-    } else {
-      isClamped = false;
-    }
-  });
-  const translateY = panYClamped;
-
-
-  const calcTranslateY = (yValue) => {
-      return yValue;
-  }
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (e, gesture) => {
-        return !isClamped;
-      },
-      onPanResponderGrant: () => {
-        pan.setOffset({
-          x: pan.x._value,
-          y: pan.y._value
-        });
-      },
-      onPanResponderMove: (e, gesture) => {     
-        if(isClamped) {
-          return false;
-        }
-        
-        return Animated.event(
-        [
-          null,
-          { dx: pan.x, dy: pan.y }
-        ], { useNativeDriver: false }
-      )(e, {...gesture, dx: gesture.dx, dy: calcTranslateY(gesture.dy)});
-      },
-      onPanResponderRelease: () => {
-        pan.flattenOffset();
-      }
-    })
-  ).current;
-
-
 
   return (
     <>
