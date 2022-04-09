@@ -109,16 +109,20 @@ const TabNavigator = ({ onScrollEvent, pan }) => {
 
   const pan = useRef(new Animated.ValueXY()).current;
 
+  const calcPanY = (panY) => {
+    const TOP_THRESH = -150;
+    if(panY < TOP_THRESH) {
+      return TOP_THRESH;
+    }
+    return panY;
+  }
+
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => {
+        return true;
+      },
       onPanResponderGrant: () => {
-        
-        const calcPanY = (panY) => {
-          return panY;
-        }
-
-
         pan.setOffset({
           x: pan.x._value,
           y: calcPanY(pan.y._value)
@@ -127,7 +131,7 @@ const TabNavigator = ({ onScrollEvent, pan }) => {
       onPanResponderMove: Animated.event(
         [
           null,
-          { dx: pan.x, dy: pan.y }
+          { dx: pan.x, dy: calcPanY(pan.y) }
         ]
       ),
       onPanResponderRelease: () => {
