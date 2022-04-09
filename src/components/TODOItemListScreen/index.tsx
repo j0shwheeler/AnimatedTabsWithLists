@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { DATA } from './data';
 import { SafeAreaView, View, StyleSheet, Text, StatusBar, Animated } from 'react-native';
 import { FlatList, PanGestureHandler } from "react-native-gesture-handler";
-import ReAnimated from 'react-native-reanimated';
+import ReAnimated, { useValue } from 'react-native-reanimated';
 
 const Item = ({ title }) => (
   <View style={styles.item}>
@@ -10,15 +10,18 @@ const Item = ({ title }) => (
   </View>
 );
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
-const AnimatedItem = ({ index, item, y }) => { 
+interface AnimatedItemProps {
+  y: Animated.Value;
+  index: number;
+  item: any;
+}
 
-
-
+const AnimatedItem = ({ index, item, y }: AnimatedItemProps) => { 
+  const translateY = y;
   return (
     <Animated.View
-    style={[{}]}
+      style={[{height: 100}, {transform: [{ translateY: translateY } ] } ]}
       key={index}
     >
       <Item title={item.title} />
@@ -26,28 +29,23 @@ const AnimatedItem = ({ index, item, y }) => {
   )
 };
 
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
+
 const TODOItemListScreen = ({onScrollEvent}) => {
-  let count = 0;
-  const y = new Animated.Value(0);
-  const onFlatListScroll =  ({nativeEvent}) => { 
-    const {contentOffset: { y }} = nativeEvent
-    onScrollEvent(y);
-
-};
-
+const y = new Animated.Value(0);
+  const onScroll = 
+    Animated.event([{ nativeEvent: { contentOffset: { y } } }], {useNativeDriver: true});
   return (
-    <View
-    >
         <AnimatedFlatList
+          scrollEventThrottle={16}
           data={DATA}
           nestedScrollEnabled={true}
-          renderItem={({ index, item }) => (
-            <AnimatedItem {...{ index, y, item }} />
+          renderItem={({ index, item}) => (
+            <AnimatedItem index={index} item={item} y={y} />
           )}
           keyExtractor={item => item.id}
-          onScroll={onFlatListScroll}
+          {...{onScroll}} 
         />
-    </View>
   );
 }
 

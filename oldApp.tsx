@@ -12,8 +12,7 @@ import {
   Text,
   Animated,
   Dimensions,
-  MaskedViewComponent,
-  PanResponder
+  MaskedViewComponent
 } from 'react-native';
 import { createMaterialTopTabNavigator, MaterialTopTabBarProps } from '@react-navigation/material-top-tabs';
 import { NavigationContainer } from '@react-navigation/native';
@@ -69,25 +68,36 @@ const App = () => {
      }
     // console.log(nativeEvent);
   }
-  
-const renderTabBar = (props) =>  {
-  return (
-      <TabBar onIndexChange={setTabIndex} {...props} />
-  )
-};
 
-const windowHeight = Dimensions.get("window").height;
+  const onScrollEvent = (y: number) => {
+     if(y < MAX_NAVIGATOR_OFFSET) {
+      translateYForTabNavigator.setValue(-y+100)
+      // translateYForPageHeader.setValue(-y+100)
+    } 
+    // else {
+    //   translateYForTabNavigator.setValue(-MAX_NAVIGATOR_OFFSET+100);
+    //   translateYForPageHeader.setValue(-MAX_NAVIGATOR_OFFSET+100);
+    // }
+  }
+  const windowHeight = Dimensions.get('screen').height;
+
+  
+const renderTabBar = (props) => (
+<PanGestureHandler
+ onGestureEvent={() => onGestureEvent}
+ onHandlerStateChange={onGestureEvent}
+>
+  <Animated.View>
+    <TabBar onIndexChange={setTabIndex} {...props} />
+  </Animated.View>
+  </PanGestureHandler>
+);
 
 const Tab = createMaterialTopTabNavigator();
-const TabNavigator = ({ onScrollEvent, pan }) => { 
+ const TabNavigator = ({ onScrollEvent }) => {
    return (
-     <Animated.View 
-      style={[{ height: 1000}, { transform: [{ translateY: pan.y }]}]}
-      {...panResponder.panHandlers}
-      >
-      <Tab.Navigator 
-         tabBar={renderTabBar}
-      >
+     <Animated.View style={[{height: windowHeight, top: translateYForTabNavigator}]}>
+      <Tab.Navigator tabBar={renderTabBar}>
           <Tab.Screen
           name="TODOScreen">
             {() => <TODOItemListScreen onScrollEvent={onScrollEvent} />}
@@ -97,60 +107,38 @@ const TabNavigator = ({ onScrollEvent, pan }) => {
           <Tab.Screen
           name="FormScreen" component={FormScreen} />
       </Tab.Navigator>
-      </Animated.View>
+    </Animated.View>
    )
  }
 
   const [tabIndex, setTabIndex] = useState(0);
 
-  const onScrollEvent = () => {
-
-  }
-
-  const pan = useRef(new Animated.ValueXY()).current;
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        
-        const calcPanY = (panY) => {
-          return panY;
-        }
-
-
-        pan.setOffset({
-          x: pan.x._value,
-          y: calcPanY(pan.y._value)
-        });
-      },
-      onPanResponderMove: Animated.event(
-        [
-          null,
-          { dx: pan.x, dy: pan.y }
-        ]
-      ),
-      onPanResponderRelease: () => {
-        pan.flattenOffset();
-      }
-    })
-  ).current;
-
-
 
   return (
     <>
-      <NavigationContainer>
-        <SafeAreaView>
-          <Animated.View 
-            style={[{ height: 150, backgroundColor: "#CCCCCC"}, {transform: [{translateY: pan.y}]}]}
-            {...panResponder.panHandlers}
-          >
-            <Text>Sticky Tabs With Header & FlatLists</Text>
-          </Animated.View>
-          <TabNavigator onScrollEvent={ onScrollEvent } pan={pan} />
-        </SafeAreaView>
-      </NavigationContainer>
+    <NavigationContainer>
+    <SafeAreaView style={styles.container}>
+    <PanGestureHandler 
+        onGestureEvent={onGestureEvent}
+        onHandlerStateChange={onGestureEvent}>
+          <Animated.View
+            style={[
+              styles.header, { height: 500, top: translateYForPageHeader }
+            ]}
+            >
+      <View style={styles.container}>
+        
+            <Text style={styles.headerText}>
+              React Native Collapsible Toolbar with Animation
+            </Text>
+         
+        <TabNavigator onScrollEvent={onScrollEvent} />
+      </View>
+      </Animated.View>
+        </PanGestureHandler>
+    </SafeAreaView>
+    
+    </NavigationContainer>
     </>
   );
 };
@@ -158,5 +146,26 @@ const TabNavigator = ({ onScrollEvent, pan }) => {
 export default App;
 
 const styles = StyleSheet.create({
- 
+  container: {
+    flex: 1,
+  },
+  header: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    left: 0,
+    right: 0,
+    height: 150,
+    backgroundColor: "#ccc"
+  },
+  headerText: {
+    color: '#000',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  textStyle: {
+    textAlign: 'center',
+    color: '#000',
+    fontSize: 18,
+    padding: 20,
+  },
 });
