@@ -13,7 +13,7 @@ const Item = ({index, title, y}) => {
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
-const TODOItemListScreen = ({scrollEvents}) => {
+const TODOItemListScreen = ({scrollEvents, contentContainerStyle}) => {
   const y = new Animated.Value(0);
   const translateY = y.interpolate({
     inputRange: [-100, 100, 120],
@@ -33,6 +33,7 @@ const TODOItemListScreen = ({scrollEvents}) => {
       renderItem={({index, item}) => (
         <Item index={index} title={item.title} y={translateY} />
       )}
+      contentContainerStyle={contentContainerStyle}
       keyExtractor={item => item.id}
     />
   );

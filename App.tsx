@@ -18,7 +18,10 @@ import {
   TabBar,
 } from './src/components';
 import {PanGestureHandler, State} from 'react-native-gesture-handler';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 const App = () => {
   const Tab = createMaterialTopTabNavigator();
@@ -118,22 +121,21 @@ const App = () => {
               onHandlerStateChange={onHandlerStateChange}>
               <Animated.View
                 style={[
-                  {padding: 100, backgroundColor: 'red'},
+                  styles.animatedHeaderContainer,
                   {transform: [{translateY: translationY}]},
                 ]}>
-                <Text>Sticky Tabs With Header & FlatLists</Text>
+                <View style={[styles.headerContainer]}>
+                  <Text>Sticky Tabs With Header & FlatLists</Text>
+                </View>
               </Animated.View>
             </PanGestureHandler>
             <Tab.Navigator tabBar={renderTabBar}>
               <Tab.Screen name="TODOScreen">
                 {() => (
-                  <Animated.View
-                    style={{
-                      backgroundColor: 'blue',
-                      // transform: [{translateY: translationY}],
-                    }}>
-                    <TODOItemListScreen scrollEvents={scrollEvents} />
-                  </Animated.View>
+                  <TODOItemListScreen
+                    contentContainerStyle={styles.TODOListItemScreen}
+                    scrollEvents={scrollEvents}
+                  />
                 )}
               </Tab.Screen>
               <Tab.Screen name="UserScreen" component={UserListScreen} />
@@ -154,17 +156,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   tabBarContainer: {
-    top: 0,
+    top: 200,
     left: 0,
     right: 0,
     position: 'absolute',
-    zIndex: 100,
+    zIndex: 1,
   },
-  headerContainer: {
+  animatedHeaderContainer: {
     top: 0,
     left: 0,
     right: 0,
     position: 'absolute',
     zIndex: 1,
+  },
+  headerContainer: {
+    height: 200,
+    backgroundColor: 'blue',
+  },
+  TODOListItemScreen: {
+    paddingTop: 250, //rendered ? headerHeight + TAB_BAR_HEIGHT : 0,
+    paddingBottom: 50,
+    minHeight: 100, //screenHeight + headerDiff,
   },
 });
