@@ -3,21 +3,45 @@ import {DATA} from './data';
 import {View, StyleSheet, Text, Animated} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
-const Item = ({title}) => (
-  <View style={styles.item}>
-    <Text style={styles.title}>{title}</Text>
-  </View>
-);
+const Item = ({index, title, y}) => {
+  return (
+    <Animated.View style={[styles.item, {transform: [{translateY: y}]}]}>
+      <Text style={styles.title}>{title}</Text>
+    </Animated.View>
+  );
+};
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
-const TODOItemListScreen = () => {
+const TODOItemListScreen = ({onScroll}) => {
   const y = new Animated.Value(0);
+  const translateY = y.interpolate({
+    inputRange: [-100, 100, 120],
+    outputRange: [-100, 100, 0],
+  });
+
+  const onFlatListScroll = Animated.event(
+    [{nativeEvent: {contentOffset: {y: y}}}],
+    {useNativeDriver: false},
+  );
+
   return (
     <AnimatedFlatList
       scrollEventThrottle={16}
       data={DATA}
-      renderItem={({index, item}) => <Item title={item.title} />}
+      onMomentumScrollEnd={() => {
+        console.log('onMomentumScrollEnd');
+      }}
+      onScrollEndDrag={() => {
+        console.log('onScrollEndDrag');
+      }}
+      onScroll={event => {
+        onFlatListScroll(event);
+        onScroll(event);
+      }}
+      renderItem={({index, item}) => (
+        <Item index={index} title={item.title} y={translateY} />
+      )}
       keyExtractor={item => item.id}
     />
   );

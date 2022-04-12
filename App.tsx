@@ -6,6 +6,7 @@ import {
   Dimensions,
   Animated,
   View,
+  NativeEventEmitter,
 } from 'react-native';
 const {Value} = Animated;
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
@@ -27,6 +28,7 @@ const App = () => {
   const absoluteY = useRef(new Value(0)).current;
   const translationY = useRef(new Value(0)).current;
   let lastOffsetY = 0;
+  let lastContentOffsetY = 0;
 
   const renderTabBar = props => {
     return (
@@ -44,8 +46,15 @@ const App = () => {
     );
   };
 
-  const renderTODOListItemScreen = () => {
-    return <TODOItemListScreen />;
+  let TODOListScrollValue = useRef(new Value(0)).current;
+  const TODOListScrollHandler = event => {
+    const listOffsetDifference =
+      lastContentOffsetY - event.nativeEvent.contentOffset.y;
+    lastContentOffsetY = event.nativeEvent.contentOffset.y;
+
+    lastOffsetY += listOffsetDifference;
+    translationY.setOffset(lastOffsetY);
+    translationY.setValue(0);
   };
 
   const onGestureEvent = Animated.event(
@@ -85,7 +94,7 @@ const App = () => {
                       backgroundColor: 'blue',
                       transform: [{translateY: translationY}],
                     }}>
-                    <TODOItemListScreen />
+                    <TODOItemListScreen onScroll={TODOListScrollHandler} />
                   </Animated.View>
                 )}
               </Tab.Screen>
