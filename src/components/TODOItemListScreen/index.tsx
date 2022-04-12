@@ -1,56 +1,27 @@
-import React, { useEffect, useRef } from 'react';
-import { DATA } from './data';
-import { SafeAreaView, View, StyleSheet, Text, StatusBar, Animated } from 'react-native';
-import { FlatList, PanGestureHandler } from "react-native-gesture-handler";
-import ReAnimated, { useValue } from 'react-native-reanimated';
+import React from 'react';
+import {DATA} from './data';
+import {View, StyleSheet, Text, Animated} from 'react-native';
+import {FlatList} from 'react-native-gesture-handler';
 
-const Item = ({ title }) => (
+const Item = ({title}) => (
   <View style={styles.item}>
     <Text style={styles.title}>{title}</Text>
   </View>
 );
 
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
-interface AnimatedItemProps {
-  y: Animated.Value;
-  index: number;
-  item: any;
-}
-
-const AnimatedItem = ({ index, item, y }: AnimatedItemProps) => { 
-  const translateY = y.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0,100]
-  });
+const TODOItemListScreen = () => {
+  const y = new Animated.Value(0);
   return (
-    <Animated.View
-      style={[{height: 100} ]}
-      key={index}
-    >
-      <Item title={item.title} />
-    </Animated.View>
-  )
-};
-
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
-
-const TODOItemListScreen = ({onScrollEvent}) => {
-const y = new Animated.Value(0);
-  const onScroll = 
-    Animated.event([{ nativeEvent: { contentOffset: { y } } }], {useNativeDriver: true});
-  return (
-        <AnimatedFlatList
-          scrollEventThrottle={16}
-          data={DATA}
-          renderItem={({ index, item}) => (
-            <AnimatedItem index={index} item={item} y={y} />
-          )}
-          keyExtractor={item => item.id}
-          onScroll={onScrollEvent}
-        />
-
+    <AnimatedFlatList
+      scrollEventThrottle={16}
+      data={DATA}
+      renderItem={({index, item}) => <Item title={item.title} />}
+      keyExtractor={item => item.id}
+    />
   );
-}
+};
 
 const styles = StyleSheet.create({
   item: {
