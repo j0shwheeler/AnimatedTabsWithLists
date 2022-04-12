@@ -26,9 +26,44 @@ const App = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const HEADER_HEIGHT = 150;
   const absoluteY = useRef(new Value(0)).current;
-  const translationY = useRef(new Value(0)).current;
   let lastOffsetY = 0;
   let lastContentOffsetY = 0;
+
+  let TODOListScrollValue = useRef(new Value(0)).current;
+  const scrollEvents = {
+    onScroll: event => {
+      // console.log('onScroll');
+      const offsetY = event.nativeEvent.contentOffset.y;
+      TODOListScrollValue.setOffset(-offsetY);
+      TODOListScrollValue.setValue(0);
+    },
+    onScrollBeginDrag: event => {
+      // console.log('onScrollBeginDrag');
+      const offsetY = event.nativeEvent.contentOffset.y;
+      TODOListScrollValue.setOffset(-offsetY);
+      TODOListScrollValue.setValue(0);
+    },
+    onScrollEndDrag: event => {
+      // console.log('onScrollEndDrag');
+      const offsetY = event.nativeEvent.contentOffset.y;
+      TODOListScrollValue.setOffset(-offsetY);
+      TODOListScrollValue.setValue(0);
+    },
+    onMomentumScrollBegin: event => {
+      // console.log('onMomentumScrollBegin');
+      const offsetY = event.nativeEvent.contentOffset.y;
+      TODOListScrollValue.setOffset(-offsetY);
+      TODOListScrollValue.setValue(0);
+    },
+    onMomentumScrollEnd: event => {
+      // console.log('onMomentumScrollEnd');
+      const offsetY = event.nativeEvent.contentOffset.y;
+      TODOListScrollValue.setOffset(-offsetY);
+      TODOListScrollValue.setValue(0);
+    },
+  };
+
+  const translationY = TODOListScrollValue;
 
   const renderTabBar = props => {
     return (
@@ -46,16 +81,15 @@ const App = () => {
     );
   };
 
-  let TODOListScrollValue = useRef(new Value(0)).current;
-  const TODOListScrollHandler = event => {
-    const listOffsetDifference =
-      lastContentOffsetY - event.nativeEvent.contentOffset.y;
-    lastContentOffsetY = event.nativeEvent.contentOffset.y;
+  // const TODOListScrollHandler = event => {
+  //   const listOffsetDifference =
+  //     lastContentOffsetY - event.nativeEvent.contentOffset.y;
+  //   lastContentOffsetY = event.nativeEvent.contentOffset.y;
 
-    lastOffsetY += listOffsetDifference;
-    translationY.setOffset(lastOffsetY);
-    translationY.setValue(0);
-  };
+  //   lastOffsetY += listOffsetDifference;
+  //   translationY.setOffset(lastOffsetY);
+  //   translationY.setValue(0);
+  // };
 
   const onGestureEvent = Animated.event(
     [{nativeEvent: {y: absoluteY, translationY: translationY}}],
@@ -92,9 +126,9 @@ const App = () => {
                   <Animated.View
                     style={{
                       backgroundColor: 'blue',
-                      transform: [{translateY: translationY}],
+                      // transform: [{translateY: translationY}],
                     }}>
-                    <TODOItemListScreen onScroll={TODOListScrollHandler} />
+                    <TODOItemListScreen scrollEvents={scrollEvents} />
                   </Animated.View>
                 )}
               </Tab.Screen>

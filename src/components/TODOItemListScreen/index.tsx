@@ -13,7 +13,7 @@ const Item = ({index, title, y}) => {
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
-const TODOItemListScreen = ({onScroll}) => {
+const TODOItemListScreen = ({scrollEvents}) => {
   const y = new Animated.Value(0);
   const translateY = y.interpolate({
     inputRange: [-100, 100, 120],
@@ -29,16 +29,7 @@ const TODOItemListScreen = ({onScroll}) => {
     <AnimatedFlatList
       scrollEventThrottle={16}
       data={DATA}
-      onMomentumScrollEnd={() => {
-        console.log('onMomentumScrollEnd');
-      }}
-      onScrollEndDrag={() => {
-        console.log('onScrollEndDrag');
-      }}
-      onScroll={event => {
-        onFlatListScroll(event);
-        onScroll(event);
-      }}
+      {...scrollEvents}
       renderItem={({index, item}) => (
         <Item index={index} title={item.title} y={translateY} />
       )}
