@@ -63,6 +63,16 @@ const App = () => {
     },
   };
 
+  // const TODOListScrollHandler = event => {
+  //   const listOffsetDifference =
+  //     lastContentOffsetY - event.nativeEvent.contentOffset.y;
+  //   lastContentOffsetY = event.nativeEvent.contentOffset.y;
+
+  //   lastOffsetY += listOffsetDifference;
+  //   translationY.setOffset(lastOffsetY);
+  //   translationY.setValue(0);
+  // };
+
   const translationY = TODOListScrollValue;
 
   const renderTabBar = props => {
@@ -80,16 +90,6 @@ const App = () => {
       </PanGestureHandler>
     );
   };
-
-  // const TODOListScrollHandler = event => {
-  //   const listOffsetDifference =
-  //     lastContentOffsetY - event.nativeEvent.contentOffset.y;
-  //   lastContentOffsetY = event.nativeEvent.contentOffset.y;
-
-  //   lastOffsetY += listOffsetDifference;
-  //   translationY.setOffset(lastOffsetY);
-  //   translationY.setValue(0);
-  // };
 
   const onGestureEvent = Animated.event(
     [{nativeEvent: {y: absoluteY, translationY: translationY}}],
@@ -116,7 +116,11 @@ const App = () => {
             <PanGestureHandler
               onGestureEvent={onGestureEvent}
               onHandlerStateChange={onHandlerStateChange}>
-              <Animated.View style={{transform: [{translateY: translationY}]}}>
+              <Animated.View
+                style={[
+                  {padding: 100, backgroundColor: 'red'},
+                  {transform: [{translateY: translationY}]},
+                ]}>
                 <Text>Sticky Tabs With Header & FlatLists</Text>
               </Animated.View>
             </PanGestureHandler>
@@ -154,7 +158,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     position: 'absolute',
-    zIndex: 1,
+    zIndex: 100,
   },
   headerContainer: {
     top: 0,
