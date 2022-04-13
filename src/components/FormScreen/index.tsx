@@ -31,8 +31,11 @@ const FormScreen = ({scrollEvents, contentContainerStyle}) => {
   return (
     <SectionList
       sections={DATA}
-      renderItem={renderItem}
       keyExtractor={(item, index) => item + index}
+      renderItem={({item}) => <Item title={item} />}
+      renderSectionHeader={({section: {title}}) => (
+        <Text style={styles.header}>{title}</Text>
+      )}
       {...scrollEvents}
       contentContainerStyle={contentContainerStyle}
     />
@@ -48,6 +51,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
+  },
+  header: {
+    fontSize: 32,
+    backgroundColor: '#fff',
   },
 });
 
