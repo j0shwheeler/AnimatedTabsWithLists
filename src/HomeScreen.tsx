@@ -1,16 +1,7 @@
-import React, {useCallback, useRef, useState} from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  Dimensions,
-  Animated,
-  View,
-  NativeEventEmitter,
-} from 'react-native';
+import React, {useRef, useState} from 'react';
+import {StyleSheet, Text, Dimensions, Animated, View} from 'react-native';
 const {Value} = Animated;
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
-import {NavigationContainer} from '@react-navigation/native';
 import {
   TODOItemListScreen,
   UserListScreen,
@@ -18,78 +9,28 @@ import {
   TabBar,
 } from './components';
 import {PanGestureHandler, State} from 'react-native-gesture-handler';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useScrollEvents} from './hooks';
 
+const headerHeight = 150;
 const HomeScreen = () => {
   const Tab = createMaterialTopTabNavigator();
-  const windowHeight = Dimensions.get('window').height;
   const [tabIndex, setTabIndex] = useState(0);
-  const HEADER_HEIGHT = 150;
   const absoluteY = useRef(new Value(0)).current;
   let lastOffsetY = 0;
-  let lastContentOffsetY = 0;
-  const {top, bottom: safeAreaBottom} = useSafeAreaInsets();
-
+  const {top: safeAreaTop, bottom: safeAreaBottom} = useSafeAreaInsets();
+  const CLAMP_VALUE = headerHeight - safeAreaTop;
   let TODOListScrollValue = useRef(new Value(0)).current;
-  const CLAMP_VALUE = 150;
-  const scrollEvents = {
-    onScroll: event => {
-      // console.log('onScroll');
-      const offsetY = event.nativeEvent.contentOffset.y;
-      console.log(offsetY);
-      if (offsetY < CLAMP_VALUE && offsetY >= 0) {
-        TODOListScrollValue.setOffset(-offsetY);
-      }
 
-      TODOListScrollValue.setValue(0);
-    },
-    onScrollBeginDrag: event => {
-      // console.log('onScrollBeginDrag');
-      const offsetY = event.nativeEvent.contentOffset.y;
-      if (offsetY < CLAMP_VALUE && offsetY >= 0) {
-        TODOListScrollValue.setOffset(-offsetY);
-      }
-      TODOListScrollValue.setValue(0);
-    },
-    onScrollEndDrag: event => {
-      // console.log('onScrollEndDrag');
-      const offsetY = event.nativeEvent.contentOffset.y;
-      if (offsetY < CLAMP_VALUE && offsetY >= 0) {
-        TODOListScrollValue.setOffset(-offsetY);
-      }
-      TODOListScrollValue.setValue(0);
-    },
-    onMomentumScrollBegin: event => {
-      // console.log('onMomentumScrollBegin');
-      const offsetY = event.nativeEvent.contentOffset.y;
-      if (offsetY < CLAMP_VALUE && offsetY >= 0) {
-        TODOListScrollValue.setOffset(-offsetY);
-      }
-      TODOListScrollValue.setValue(0);
-    },
-    onMomentumScrollEnd: event => {
-      // console.log('onMomentumScrollEnd');
-      const offsetY = event.nativeEvent.contentOffset.y;
-      if (offsetY < CLAMP_VALUE && offsetY >= 0) {
-        TODOListScrollValue.setOffset(-offsetY);
-      }
-      TODOListScrollValue.setValue(0);
-    },
+  const setTODOListScrollValue = event => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    console.log(offsetY);
+    if (offsetY < CLAMP_VALUE && offsetY >= 0) {
+      TODOListScrollValue.setOffset(-offsetY);
+    }
+    TODOListScrollValue.setValue(0);
   };
-
-  // const TODOListScrollHandler = event => {
-  //   const listOffsetDifference =
-  //     lastContentOffsetY - event.nativeEvent.contentOffset.y;
-  //   lastContentOffsetY = event.nativeEvent.contentOffset.y;
-
-  //   lastOffsetY += listOffsetDifference;
-  //   translationY.setOffset(lastOffsetY);
-  //   translationY.setValue(0);
-  // };
-
+  const scrollEvents = useScrollEvents(setTODOListScrollValue);
   const translationY = TODOListScrollValue;
 
   const renderTabBar = props => {
@@ -135,7 +76,7 @@ const HomeScreen = () => {
             styles.animatedHeaderContainer,
             {transform: [{translateY: translationY}]},
           ]}>
-          <View style={[styles.headerContainer, {paddingTop: top}]}>
+          <View style={[styles.headerContainer, {paddingTop: safeAreaTop}]}>
             <Text>Sticky Tabs With Header & FlatLists</Text>
           </View>
         </Animated.View>
@@ -167,7 +108,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   tabBarContainer: {
-    top: 200,
+    top: headerHeight,
     left: 0,
     right: 0,
     position: 'absolute',
@@ -181,7 +122,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   headerContainer: {
-    height: 200,
+    height: headerHeight,
     backgroundColor: 'blue',
   },
   TODOListItemScreen: {
