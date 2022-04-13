@@ -1,11 +1,12 @@
 import React from 'react';
 import {DATA} from './data';
-import {View, StyleSheet, Text, Animated} from 'react-native';
+import {StyleSheet, Text, Animated} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
+import {ListItem} from '../../common';
 
-const Item = ({index, title, y}) => {
+const Item = ({title}) => {
   return (
-    <Animated.View style={[styles.item, {transform: [{translateY: y}]}]}>
+    <Animated.View style={[styles.item]}>
       <Text style={styles.title}>{title}</Text>
     </Animated.View>
   );
@@ -14,27 +15,14 @@ const Item = ({index, title, y}) => {
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const TODOItemListScreen = ({scrollEvents, contentContainerStyle}) => {
-  const y = new Animated.Value(0);
-  const translateY = y.interpolate({
-    inputRange: [-100, 100, 120],
-    outputRange: [-100, 100, 0],
-  });
-
-  const onFlatListScroll = Animated.event(
-    [{nativeEvent: {contentOffset: {y: y}}}],
-    {useNativeDriver: false},
-  );
-
   return (
     <AnimatedFlatList
       scrollEventThrottle={16}
       data={DATA}
       {...scrollEvents}
-      renderItem={({index, item}) => (
-        <Item index={index} title={item.title} y={translateY} />
-      )}
+      renderItem={({item}: {item: ListItem}) => <Item title={item.title} />}
       contentContainerStyle={contentContainerStyle}
-      keyExtractor={item => item.id}
+      keyExtractor={(item: ListItem) => item.id}
     />
   );
 };

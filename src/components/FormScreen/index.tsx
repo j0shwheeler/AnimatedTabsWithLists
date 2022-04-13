@@ -1,40 +1,43 @@
-import React, {useState} from 'react';
-import { FORM_DATA, FIELD_DATA } from './data';
-import Animated, { useValue } from "react-native-reanimated";
-import { PanGestureHandler, State } from "react-native-gesture-handler";
-import { SafeAreaView, View, FlatList, StyleSheet, Text, StatusBar } from 'react-native';
+import React from 'react';
+import {View, StyleSheet, Text, SectionList} from 'react-native';
 
-const { cond, eq, add, call, set, Value, event, or } = Animated;
+const DATA = [
+  {
+    title: 'Main dishes',
+    data: ['Pizza', 'Burger', 'Risotto'],
+  },
+  {
+    title: 'Sides',
+    data: ['French Fries', 'Onion Rings', 'Fried Shrimps'],
+  },
+  {
+    title: 'Drinks',
+    data: ['Water', 'Coke', 'Beer'],
+  },
+  {
+    title: 'Desserts',
+    data: ['Cheese Cake', 'Ice Cream'],
+  },
+];
 
-const Item = ({ title }) => (
+const Item = ({title}) => (
   <View style={styles.item}>
     <Text style={styles.title}>{title}</Text>
   </View>
 );
 
-const FormScreen = () => {
-  const renderItem = ({ item }) => (
-    <Item title={item.title} />
-  );
+const FormScreen = ({scrollEvents, contentContainerStyle}) => {
+  const renderItem = ({item}) => <Item title={item.title} />;
   return (
-    <View style={{flex:1, flexDirection: "column"}}>
-      <View style={{height: 275}}>
-        <FlatList
-          data={FORM_DATA}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-        />
-      </View>
-      <View style={{height: 275}}>
-        <FlatList
-          data={FIELD_DATA}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-        /> 
-      </View>
-    </View>  
+    <SectionList
+      sections={DATA}
+      renderItem={renderItem}
+      keyExtractor={(item, index) => item + index}
+      {...scrollEvents}
+      contentContainerStyle={contentContainerStyle}
+    />
   );
-}
+};
 
 const styles = StyleSheet.create({
   item: {

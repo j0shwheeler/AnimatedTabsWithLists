@@ -1,28 +1,31 @@
 import React from 'react';
-import { DATA } from './data';
-import { SafeAreaView, View, FlatList, StyleSheet, Text, StatusBar } from 'react-native';
+import {DATA} from './data';
+import {StyleSheet, Text, Animated} from 'react-native';
+import {FlatList} from 'react-native-gesture-handler';
+import {ListItem} from '../../common';
 
-const Item = ({ title }) => (
-  <View style={styles.item}>
-    <Text style={styles.title}>{title}</Text>
-  </View>
-);
-
-const UserListScreen = () => {
-  const renderItem = ({ item }) => (
-    <Item title={item.title} />
-  );
-
+const Item = ({title}) => {
   return (
-    <View>
-      <FlatList
-        data={DATA}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-      />
-    </View>
+    <Animated.View style={[styles.item]}>
+      <Text style={styles.title}>{title}</Text>
+    </Animated.View>
   );
-}
+};
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+
+const UserListScreen = ({scrollEvents, contentContainerStyle}) => {
+  return (
+    <AnimatedFlatList
+      scrollEventThrottle={16}
+      data={DATA}
+      {...scrollEvents}
+      renderItem={({item}: {item: ListItem}) => <Item title={item.title} />}
+      contentContainerStyle={contentContainerStyle}
+      keyExtractor={(item: ListItem) => item.id}
+    />
+  );
+};
 
 const styles = StyleSheet.create({
   item: {
